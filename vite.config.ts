@@ -41,14 +41,11 @@ function compileAndBundle () {
       entryPoints: ['src/plugin.js'], // 替换成你的主文件路径
       bundle: true,
       outfile: 'dist/src/plugin.js',
+      format: 'esm', // 将ES模块转换为立即执行函数表达式（IIFE）
       plugins: [
         {
           name: 'resolve-three-alias',
           setup (build) {
-            // 使用alias映射模块路径
-            // build.onResolve({ filter: /^three$/ }, args => {
-            //   return { path: path.resolve(__dirname, 'node_modules/three/build/three.module.js') }
-            // })
             build.onResolve({ filter: /^three\/examples\/jsm\/controls\/OrbitControls$/ }, args => {
               return { path: path.resolve(__dirname, 'node_modules/three/examples/jsm/controls/OrbitControls.js') }
             })
@@ -62,6 +59,11 @@ function compileAndBundle () {
     })
   })
 }
+
+// 增强错误处理
+compileAndBundle().catch(error => {
+  console.error('编译和打包过程中出现错误:', error)
+})
 function CustomBuildPlugin (): Plugin {
   return {
     name: 'custom-build-plugin',
