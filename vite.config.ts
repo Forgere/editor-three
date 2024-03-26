@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import esbuild from 'esbuild'
 import { type Plugin, defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
@@ -13,15 +14,66 @@ export default defineConfig({
         }
       }
     }),
-    copyVuePlugin()
+    copyVuePlugin(),
+    CustomBuildPlugin()
   ],
   define: {
     __VUE_PROD_DEVTOOLS__: JSON.stringify(true)
   },
   optimizeDeps: {
     exclude: ['@vue/repl']
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: './src/main.ts',
+        index: './index.html' // 添加 HTML 文件的输入路径
+      },
+      output: {
+        entryFileNames: '[name].js'
+      }
+    }
   }
 })
+function compileAndBundle () {
+  return new Promise((resolve, reject) => {
+    esbuild.build({
+      entryPoints: ['src/plugin.js'], // 替换成你的主文件路径
+      bundle: true,
+      outfile: 'dist/src/plugin.js',
+      plugins: [
+        {
+          name: 'resolve-three-alias',
+          setup (build) {
+            // 使用alias映射模块路径
+            // build.onResolve({ filter: /^three$/ }, args => {
+            //   return { path: path.resolve(__dirname, 'node_modules/three/build/three.module.js') }
+            // })
+            build.onResolve({ filter: /^three\/examples\/jsm\/controls\/OrbitControls$/ }, args => {
+              return { path: path.resolve(__dirname, 'node_modules/three/examples/jsm/controls/OrbitControls.js') }
+            })
+          }
+        }
+      ]
+    }).then(() => {
+      resolve()
+    }).catch((err) => {
+      reject(err)
+    })
+  })
+}
+function CustomBuildPlugin (): Plugin {
+  return {
+    name: 'custom-build-plugin',
+    apply: 'build',
+    // 在构建完成后执行额外的编译任务
+    async closeBundle () {
+      console.log('Custom build task executed after Vite build completion')
+      // 在这里添加你的额外编译任务逻辑
+      await compileAndBundle()
+    }
+  }
+}
 
 function copyVuePlugin (): Plugin {
   return {
@@ -30,6 +82,7 @@ function copyVuePlugin (): Plugin {
       const copyFile = (file: string) => {
         const filePath = path.resolve(__dirname, file)
         const basename = path.basename(file)
+        console.log(fs.existsSync(filePath), fs.accessSync(filePath))
         if (!fs.existsSync(filePath)) {
           throw new Error(
             `${basename} not built. ` +
@@ -43,11 +96,11 @@ function copyVuePlugin (): Plugin {
         })
       }
 
-      copyFile('../vue/dist/vue.esm-browser.js')
-      copyFile('../vue/dist/vue.esm-browser.prod.js')
-      copyFile('../vue/dist/vue.runtime.esm-browser.js')
-      copyFile('../vue/dist/vue.runtime.esm-browser.prod.js')
-      copyFile('../server-renderer/dist/server-renderer.esm-browser.js')
+      copyFile('./source/vue/vue.esm-browser.js')
+      copyFile('./source/vue/vue.esm-browser.prod.js')
+      copyFile('./source/vue/vue.runtime.esm-browser.js')
+      copyFile('./source/vue/vue.runtime.esm-browser.prod.js')
+      copyFile('./source/vue/server-renderer.esm-browser.js')
     }
   }
 }
