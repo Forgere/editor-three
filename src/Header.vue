@@ -1,112 +1,54 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { ReplStore } from '@vue/repl'
-import { downloadProject } from './download/download'
-import Sun from './icons/Sun.vue'
-import Moon from './icons/Moon.vue'
-import Share from './icons/Share.vue'
-import Download from './icons/Download.vue'
-import GitHub from './icons/GitHub.vue'
-import Reload from './icons/Reload.vue'
-import VersionSelect from './VersionSelect.vue'
+import type { ReplStore } from "@vue/repl";
+import { downloadProject } from "./download/download";
+import Sun from "./icons/Sun.vue";
+import Moon from "./icons/Moon.vue";
+import Share from "./icons/Share.vue";
+import Download from "./icons/Download.vue";
+import Reload from "./icons/Reload.vue";
 
 const props = defineProps<{
-  store: ReplStore
-  prod: boolean
-  ssr: boolean
-}>()
+  store: ReplStore;
+  prod: boolean;
+  ssr: boolean;
+}>();
 const emit = defineEmits([
-  'toggle-theme',
-  'toggle-ssr',
-  'toggle-prod',
-  'reload-page',
-])
+  "toggle-theme",
+  "toggle-ssr",
+  "toggle-prod",
+  "reload-page",
+]);
 
-const { store } = props
-
-const currentCommit = __COMMIT__
-
-const vueVersion = computed(() => {
-  if (store.loading) {
-    return 'loading...'
-  }
-  return store.vueVersion || `@${__COMMIT__}`
-})
-
-async function setVueVersion(v: string) {
-  store.vueVersion = v
-}
-
-function resetVueVersion() {
-  store.vueVersion = null
-}
+const { store } = props;
 
 async function copyLink(e: MouseEvent) {
   if (e.metaKey) {
     // hidden logic for going to local debug from play.vuejs.org
-    window.location.href = 'http://localhost:5173/' + window.location.hash
-    return
+    window.location.href = "http://localhost:5173/" + window.location.hash;
+    return;
   }
-  await navigator.clipboard.writeText(location.href)
-  alert('Sharable URL has been copied to clipboard.')
+  await navigator.clipboard.writeText(location.href);
+  alert("Sharable URL has been copied to clipboard.");
 }
 
 function toggleDark() {
-  const cls = document.documentElement.classList
-  cls.toggle('dark')
+  const cls = document.documentElement.classList;
+  cls.toggle("dark");
   localStorage.setItem(
-    'vue-sfc-playground-prefer-dark',
-    String(cls.contains('dark')),
-  )
-  emit('toggle-theme', cls.contains('dark'))
+    "vue-sfc-playground-prefer-dark",
+    String(cls.contains("dark"))
+  );
+  emit("toggle-theme", cls.contains("dark"));
 }
 </script>
 
 <template>
   <nav>
     <h1>
-      <img alt="logo" src="/logo.svg" />
+      <!-- <img alt="logo" src="/logo.svg" /> -->
       <span>Vue SFC Playground</span>
     </h1>
     <div class="links">
-      <VersionSelect
-        v-model="store.typescriptVersion"
-        pkg="typescript"
-        label="TypeScript Version"
-      />
-      <VersionSelect
-        :model-value="vueVersion"
-        @update:model-value="setVueVersion"
-        pkg="vue"
-        label="Vue Version"
-      >
-        <li>
-          <a @click="resetVueVersion">This Commit ({{ currentCommit }})</a>
-        </li>
-        <li>
-          <a
-            href="https://app.netlify.com/sites/vue-sfc-playground/deploys"
-            target="_blank"
-            >Commits History</a
-          >
-        </li>
-      </VersionSelect>
-      <button
-        title="Toggle development production mode"
-        class="toggle-prod"
-        :class="{ prod }"
-        @click="$emit('toggle-prod')"
-      >
-        <span>{{ prod ? 'PROD' : 'DEV' }}</span>
-      </button>
-      <button
-        title="Toggle server rendering mode"
-        class="toggle-ssr"
-        :class="{ enabled: ssr }"
-        @click="$emit('toggle-ssr')"
-      >
-        <span>{{ ssr ? 'SSR ON' : 'SSR OFF' }}</span>
-      </button>
       <button title="Toggle dark mode" class="toggle-dark" @click="toggleDark">
         <Sun class="light" />
         <Moon class="dark" />
@@ -124,14 +66,6 @@ function toggleDark() {
       >
         <Download />
       </button>
-      <a
-        href="https://github.com/vuejs/core/tree/main/packages/sfc-playground"
-        target="_blank"
-        title="View on GitHub"
-        class="github"
-      >
-        <GitHub />
-      </a>
     </div>
   </nav>
 </template>
