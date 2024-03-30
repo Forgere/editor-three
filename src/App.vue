@@ -6,6 +6,7 @@ import { ref, watchEffect, onMounted, computed } from "vue";
 
 //@ts-ignore
 import welcomeCode from "./template/welcome.vue?raw";
+import newSfc from "./template/new-sfc.vue?raw";
 
 const replRef = ref<InstanceType<typeof Repl>>();
 
@@ -70,6 +71,8 @@ const newImportMap = computed(() => {
       ...importMap.value.imports,
       three: `${location.origin}/src/three`,
       pluginjs: `${location.origin}/src/plugin.js`,
+      veaury: `${location.origin}/src/veaury.ts`,
+      'fiber-screen-kit': `${location.origin}/src/fiber-screen-kit.ts`
     },
   };
   return map;
@@ -116,6 +119,7 @@ function toggleTheme(isDark: boolean) {
 onMounted(() => {
   setFiles({
     "App.vue": welcomeCode,
+    'Comp.vue': newSfc,
   });
 
   const cls = document.documentElement.classList;
