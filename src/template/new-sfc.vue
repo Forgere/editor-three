@@ -2,7 +2,7 @@
   <Scene>
     <Box :position="[-1,0,0]" />
     <Box :position="[1,0,0]" />
-    <Model />
+    <Model :scale="[0.01, 0.01, 0.01]"/>
   </Scene>
 </template>
 <script>
